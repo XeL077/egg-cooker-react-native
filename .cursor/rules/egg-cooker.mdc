@@ -1,0 +1,50 @@
+project:
+  name: rn-lottie-demo
+  type: react-native
+  description: >
+    Простое приложение на React Native с поддержкой iOS, Android и Web.
+    Использует Lottie-анимации и react-native-web для запуска в браузере.
+
+platforms:
+  - ios
+  - android
+  - web
+
+features:
+  animations:
+    - lottie-react-native
+    - lottie-react
+  ui:
+    - react-native-paper
+    - react-native-gesture-handler
+  web:
+    - react-native-web
+
+tools:
+  - expo
+  - vite
+  - babel
+
+rules:
+  code-style:
+    language: javascript
+    framework: react-native
+    jsx: true
+    format: prettier
+
+  imports:
+    allow:
+      - react-native
+      - react-native-web
+      - lottie-react-native
+      - lottie-react
+
+components:
+  App:
+    description: Главный компонент приложения
+    platforms: [ios, android, web]
+
+ai-assistant:
+  preferred-language: ru
+  code-suggestions: true
+  auto-imports: true
