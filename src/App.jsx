@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Layout from './components/Layout';
+import SplashScreen from './components/SplashScreen';
 
 const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
+
+  const handleSplashFinish = () => {
+    setShowSplash(false);
+  };
+
+  if (showSplash) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
+
   return (
     <Layout>
       <View style={styles.container}>
