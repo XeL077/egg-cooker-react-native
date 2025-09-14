@@ -1,0 +1,28 @@
+{
+  "name": "egg-cooker",
+  "version": "0.0.1",
+  "private": true,
+  "description": "time counter egg cooker",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "react-native",
+    "react"
+  ],
+  "author": "XeL077",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-native": "0.81.4",
+    "react-native-web": "^0.21.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.2",
+    "vite": "^7.1.5"
+  }
+}
