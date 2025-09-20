@@ -1,60 +1,99 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { SettingsProvider, useSettings } from './context/SettingsContext';
 import Layout from './components/Layout';
 import SplashScreen from './components/SplashScreen';
 import TemperatureToggle from './components/TemperatureToggle';
 import DonenessSelector from './components/DonenessSelector';
+import EggSizeSelector from './components/EggSizeSelector';
+import SettingsModal from './components/SettingsModal';
 
 /**
- * App - главный компонент приложения
+ * Внутренний компонент App с доступом к контексту
  */
-const App = () => {
-  const [showSplash, setShowSplash] = useState(true);
-  const [isHotWater, setIsHotWater] = useState(false);
-  const [selectedDoneness, setSelectedDoneness] = useState('soft');
-
-  const handleSplashFinish = () => {
-    setShowSplash(false);
-  };
+const AppContent = () => {
+  const [showSettings, setShowSettings] = useState(false);
+  
+  // Получаем настройки из контекста
+  const {
+    isLoading,
+    isHotWater,
+    selectedDoneness,
+    setTemperature,
+    setDoneness,
+  } = useSettings();
 
   const handleTemperatureToggle = (isHot) => {
-    setIsHotWater(isHot);
+    setTemperature(isHot);
   };
 
   const handleDonenessSelect = (doneness) => {
-    setSelectedDoneness(doneness);
+    setDoneness(doneness);
   };
 
-  if (showSplash) {
-    return <SplashScreen onFinish={handleSplashFinish} />;
+  const handleSettingsToggle = () => {
+    setShowSettings(!showSettings);
+  };
+
+  // Показываем экран загрузки пока настройки не загружены
+  if (isLoading) {
+    return <SplashScreen isLoading={true} />;
   }
 
   return (
     <Layout>
       <View style={styles.container}>
-        <Text style={styles.title}>🥚 Egg Timer+</Text>
-        <Text style={styles.subtitle}>Настройте параметры варки</Text>
+        {/* Заголовок с кнопкой настроек */}
+        <View style={styles.header}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>🥚 Egg Timer+</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.settingsButton}
+            onPress={handleSettingsToggle}
+          >
+            <Text style={styles.settingsButtonText}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
         
-        <TemperatureToggle 
-          isHot={isHotWater}
-          onToggle={handleTemperatureToggle}
-        />
-        
-        <DonenessSelector 
-          selectedDoneness={selectedDoneness}
-          onSelect={handleDonenessSelect}
-        />
       </View>
+
+      {/* Modal с настройками */}
+      <SettingsModal
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </Layout>
+  );
+};
+
+/**
+ * Главный компонент App с провайдером настроек
+ */
+const App = () => {
+  return (
+    <SettingsProvider>
+      <AppContent />
+    </SettingsProvider>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#f5f5f5',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
+  titleContainer: {
+    flex: 1,
+    alignItems: 'center',
   },
   title: {
     fontSize: 32,
@@ -62,17 +101,24 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: '#333',
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
+  settingsButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  statusText: {
-    fontSize: 14,
-    color: '#4CAF50',
-    fontWeight: '600',
-    marginTop: 16,
-    textAlign: 'center',
+  settingsButtonText: {
+    fontSize: 20,
   },
 });
 
