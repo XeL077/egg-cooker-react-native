@@ -1,8 +1,14 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const ACTIVE_TAB_TYPE = {
+  TIMER: 'timer',
+  EGG: 'egg',
+}
+
 // Ключи для AsyncStorage
 const STORAGE_KEYS = {
+  ACTIVE_TAB: 'active_tab',
   COUNTRY: 'egg_timer_country',
   SIZE: 'egg_timer_size',
   TEMPERATURE: 'egg_timer_temperature',
@@ -13,6 +19,7 @@ const STORAGE_KEYS = {
 
 // Начальное состояние настроек
 const initialState = {
+  activeTab: ACTIVE_TAB_TYPE.TIMER,
   selectedCountry: 'CIS',
   selectedSize: null,
   isHotWater: false,
@@ -27,6 +34,7 @@ const initialState = {
 
 // Типы действий
 const ActionTypes = {
+  SET_ACTIVE_TAB: 'SET_ACTIVE_TAB',
   SET_LOADING: 'SET_LOADING',
   SET_COUNTRY: 'SET_COUNTRY',
   SET_SIZE: 'SET_SIZE',
@@ -40,6 +48,9 @@ const ActionTypes = {
 // Редьюсер для управления состоянием
 const settingsReducer = (state, action) => {
   switch (action.type) {
+    case ActionTypes.SET_ACTIVE_TAB:
+      return { ...state, activeTab: action.payload };
+    
     case ActionTypes.SET_LOADING:
       return { ...state, isLoading: action.payload };
     
@@ -100,6 +111,7 @@ export const SettingsProvider = ({ children }) => {
     try {
       const [
         country,
+        activeTab,
         size,
         temperature,
         doneness,
@@ -107,6 +119,7 @@ export const SettingsProvider = ({ children }) => {
         language
       ] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.COUNTRY),
+        AsyncStorage.getItem(STORAGE_KEYS.ACTIVE_TAB),
         AsyncStorage.getItem(STORAGE_KEYS.SIZE),
         AsyncStorage.getItem(STORAGE_KEYS.TEMPERATURE),
         AsyncStorage.getItem(STORAGE_KEYS.DONENESS),
@@ -116,6 +129,7 @@ export const SettingsProvider = ({ children }) => {
 
       // Применяем загруженные настройки
       if (country) dispatch({ type: ActionTypes.SET_COUNTRY, payload: country });
+      if (activeTab) dispatch({ type: ActionTypes.SET_ACTIVE_TAB, payload: activeTab });
       if (size) dispatch({ type: ActionTypes.SET_SIZE, payload: size });
       if (temperature !== null) {
         dispatch({ type: ActionTypes.SET_TEMPERATURE, payload: temperature === 'true' });
@@ -140,6 +154,7 @@ export const SettingsProvider = ({ children }) => {
   const saveSettings = async () => {
     try {
       await Promise.all([
+        AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, state.activeTab),
         AsyncStorage.setItem(STORAGE_KEYS.COUNTRY, state.selectedCountry),
         AsyncStorage.setItem(STORAGE_KEYS.SIZE, state.selectedSize || ''),
         AsyncStorage.setItem(STORAGE_KEYS.TEMPERATURE, state.isHotWater.toString()),
@@ -152,33 +167,29 @@ export const SettingsProvider = ({ children }) => {
     }
   };
 
-  // Действия для изменения настроек
+  // FC для изменения настроек
   const actions = {
+    setActiveTab: (activeTab) => {
+      dispatch({ type: ActionTypes.SET_ACTIVE_TAB, payload: activeTab });
+    },
     setCountry: (country) => {
       dispatch({ type: ActionTypes.SET_COUNTRY, payload: country });
     },
-    
     setSize: (size) => {
       dispatch({ type: ActionTypes.SET_SIZE, payload: size });
     },
-    
     setTemperature: (isHot) => {
       dispatch({ type: ActionTypes.SET_TEMPERATURE, payload: isHot });
     },
-    
     setDoneness: (doneness) => {
       dispatch({ type: ActionTypes.SET_DONENESS, payload: doneness });
     },
-    
     setNotifications: (notifications) => {
       dispatch({ type: ActionTypes.SET_NOTIFICATIONS, payload: notifications });
     },
-  
-    
     setLanguage: (language) => {
       dispatch({ type: ActionTypes.SET_LANGUAGE, payload: language });
     },
-    
     resetSettings: () => {
       dispatch({ type: ActionTypes.RESET_SETTINGS });
     },

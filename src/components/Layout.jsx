@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { colors } from '../theme';
 
 const Layout = ({ children }) => {
   return (
@@ -12,7 +13,7 @@ const Layout = ({ children }) => {
 const styles = StyleSheet.create({
   layout: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.backgroundPrimary,
     minHeight: '100vh',
   },
 });

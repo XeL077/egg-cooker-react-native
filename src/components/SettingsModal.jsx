@@ -12,6 +12,7 @@ import {
 import { useSettings } from '../context/SettingsContext';
 import { EGG_SIZE_SYSTEMS, getAvailableSystems } from '../data/eggSizes';
 import SelectBox from './SelectBox';
+import { colors, textStyles, colorUtils } from '../theme';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -102,11 +103,11 @@ const SettingsModal = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: colors.backgroundOverlay,
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.backgroundPrimary,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: screenHeight * 0.9,
@@ -122,25 +123,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: colors.borderLight,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    ...textStyles.h3,
+    color: colors.textPrimary,
   },
   closeButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.gray100,
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeButtonText: {
+    ...textStyles.button,
     fontSize: 18,
-    color: '#666',
-    fontWeight: 'bold',
+    color: colors.textSecondary,
   },
   content: {
     flex: 1,
@@ -150,27 +150,25 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    ...textStyles.h4,
+    color: colors.textPrimary,
     marginBottom: 12,
   },
   infoBox: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: colorUtils.withOpacity(colors.secondary, 0.1),
     padding: 12,
     borderRadius: 8,
     borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
+    borderLeftColor: colors.secondary,
   },
   infoTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    ...textStyles.label,
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   infoText: {
-    fontSize: 13,
-    color: '#666',
+    ...textStyles.caption,
+    color: colors.textSecondary,
     marginBottom: 2,
   },
   settingItem: {
@@ -179,15 +177,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: colors.borderLight,
   },
   settingLabel: {
-    fontSize: 16,
-    color: '#333',
+    ...textStyles.body,
+    color: colors.textPrimary,
   },
   settingValue: {
-    fontSize: 14,
-    color: '#666',
+    ...textStyles.bodySmall,
+    color: colors.textSecondary,
   },
 });
 
