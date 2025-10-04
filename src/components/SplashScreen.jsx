@@ -1,7 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, ActivityIndicator } from 'react-native';
-import Lottie from 'react-lottie';
-import chikiChikAnimation from '../assets/animations/chiki-chik.json';
 
 /**
  * SplashScreen - анимированный экран загрузки
@@ -11,69 +9,68 @@ import chikiChikAnimation from '../assets/animations/chiki-chik.json';
 const SplashScreen = ({ onFinish, isLoading = false }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
+  const bounceAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (isLoading) {
-      // В режиме загрузки просто показываем анимацию появления
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          tension: 50,
-          friction: 7,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      // Обычный режим сплеша с анимацией исчезновения
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          tension: 50,
-          friction: 7,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        // После завершения анимации появления ждем 1.5 секунды
-        setTimeout(() => {
-          // Анимация исчезновения
-          Animated.parallel([
-            Animated.timing(fadeAnim, {
-              toValue: 0,
-              duration: 300,
-              useNativeDriver: true,
-            }),
-            Animated.timing(scaleAnim, {
-              toValue: 0.8,
-              duration: 300,
-              useNativeDriver: true,
-            }),
-          ]).start(() => {
-            onFinish();
-          });
-        }, 1500);
-      });
-    }
-  }, [fadeAnim, scaleAnim, onFinish, isLoading]);
+    // Анимация появления
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
 
-  
-  const optionsLottieAnimation = {
-    loop: true,
-    autoplay: true,
-    animationData: chikiChikAnimation,
-    rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice'
+    // Анимация подпрыгивания яйца
+    const bounceAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounceAnim, {
+          toValue: 1.2,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(bounceAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    bounceAnimation.start();
+
+    if (!isLoading) {
+      // Обычный режим сплеша с анимацией исчезновения
+      setTimeout(() => {
+        bounceAnimation.stop();
+        // Анимация исчезновения
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleAnim, {
+            toValue: 0.8,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          onFinish();
+        });
+      }, 2000);
     }
-  };
+
+    return () => {
+      bounceAnimation.stop();
+    };
+  }, [fadeAnim, scaleAnim, bounceAnim, onFinish, isLoading]);
+
   return (
     <View style={styles.container}>
       <Animated.View 
@@ -85,11 +82,16 @@ const SplashScreen = ({ onFinish, isLoading = false }) => {
           },
         ]}
       >
-        <Lottie 
-          options={optionsLottieAnimation}
-          height={120}
-          width={120}
-        />
+        <Animated.Text 
+          style={[
+            styles.eggEmoji,
+            {
+              transform: [{ scale: bounceAnim }],
+            },
+          ]}
+        >
+          🥚
+        </Animated.Text>
         <Text style={styles.title}>🥚 Egg Timer+</Text>
         {isLoading && (
           <ActivityIndicator 
@@ -109,7 +111,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fffbc9',
-    height: '100vh',
   },
   content: {
     alignItems: 'center',
@@ -130,6 +131,10 @@ const styles = StyleSheet.create({
   },
   spinner: {
     marginTop: 20,
+  },
+  eggEmoji: {
+    fontSize: 120,
+    marginBottom: 20,
   },
 });
 

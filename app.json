@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "Egg Cooker",
+    "slug": "egg-cooker",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "icon": "./public/icon-512.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./public/icon-512.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "jsEngine": "jsc",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.xel077.eggcooker",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./public/icon-512.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.xel077.eggcooker"
+    },
+    "web": {
+      "favicon": "./public/icon-48.png",
+      "bundler": "metro"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/d456eb92-8ca4-47e8-b228-8fb9d034c6a4",
+      "enabled": false,
+      "checkAutomatically": "ON_ERROR_RECOVERY",
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d456eb92-8ca4-47e8-b228-8fb9d034c6a4"
+      }
+    }
+  }
+}

@@ -24,7 +24,7 @@ import { colors, gradients, darkColors, textStyles, typographyUtils } from '../t
 
 ```javascript
 // Основные цвета
-colors.primary        // #FF6B35 - оранжевый
+colors.primary        //rgb(234 212 143) - оранжевый
 colors.secondary      // #4CAF50 - зеленый
 colors.accent         // #FFC107 - желтый
 

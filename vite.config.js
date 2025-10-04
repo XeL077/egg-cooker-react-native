@@ -9,7 +9,8 @@ export default defineConfig({
     alias: {
       "react-native": "react-native-web",
       "react-native-svg": "react-native-svg/lib/module/ReactNativeSVG.web.js"
-    }
+    },
+    extensions: ['.web.js', '.web.jsx', '.js', '.jsx', '.json', '.ts', '.tsx']
   },
   optimizeDeps: {
     include: ["react-native-svg"]

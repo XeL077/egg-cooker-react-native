@@ -1,119 +1,92 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSettings } from '../context/SettingsContext';
-import { EGG_SIZE_SYSTEMS } from '../data/eggSizes';
-import SelectBox from './SelectBox';
+import { getCISSystem } from '../data/eggSizes';
+import { colors, textStyles } from '../theme';
+import { normalizePadding, normalizeFontSize } from '../utils/responsive';
 
 /**
- * Компонент для выбора размера яйца
+ * Компонент для выбора размера яйца (СНГ) - минималистичный дизайн
  */
 const EggSizeSelector = () => {
   // Получаем настройки из контекста
-  const { selectedCountry, selectedSize, setSize } = useSettings();
+  const { selectedSize, setSize } = useSettings();
 
-  const currentSystem = EGG_SIZE_SYSTEMS[selectedCountry];
-  const currentSize = currentSystem?.sizes.find(size => size.id === selectedSize);
-
-  // Преобразуем размеры в формат для SelectBox
-  const sizeOptions = useMemo(() => {
-    if (!currentSystem) return [];
-    
-    return currentSystem.sizes.map(size => ({
-      value: size.id,
-      label: `${size.name} - ${size.label}`,
-      description: size.label,
-      weight: `${size.minWeight}+${size?.maxWeight ? `-${size?.maxWeight}` : ''}г`
-    }));
-  }, [currentSystem]);
-
-  // Кастомный рендер для опций размера
-  const renderSizeOption = (option) => (
-    <View style={styles.optionContent}>
-      <Text style={styles.optionName}>{option.label.split(' - ')[0]}</Text>
-      <Text style={styles.optionDescription}>{option.description}</Text>
-      <Text style={styles.optionWeight}>{option.weight}</Text>
-    </View>
-  );
+  const cisSystem = getCISSystem();
 
   return (
-    <View style={styles.container}>
-      <SelectBox
-        label="Размер яйца"
-        placeholder="Выберите размер"
-        options={sizeOptions}
-        selectedValue={selectedSize}
-        onSelect={setSize}
-        disabled={!currentSystem}
-        disabledText="Сначала выберите страну в настройках"
-        renderOption={renderSizeOption}
-      />
-
-      {/* Информация о выбранном размере */}
-      {currentSize && (
-        <View style={styles.infoBox}>
-          <Text style={styles.infoTitle}>Информация о размере:</Text>
-          <Text style={styles.infoText}>
-            {currentSize.name} ({currentSize.label})
-          </Text>
-          <Text style={styles.infoText}>
-            Вес: {currentSize.minWeight}+{currentSize.maxWeight ? `-${currentSize.maxWeight}` : ''}г
-          </Text>
-          <Text style={styles.infoText}>
-            Страна: {currentSystem.flag} {currentSystem.name}
-          </Text>
-        </View>
-      )}
+    <View style={styles.container}>      
+      {/* Chips для выбора размера */}
+      <View style={styles.chipsContainer}>
+        {cisSystem.sizes.map((size) => {
+          const isSelected = selectedSize === size.id;
+          return (
+            <TouchableOpacity
+              key={size.id}
+              style={[
+                styles.chip,
+                isSelected && styles.chipSelected
+              ]}
+              onPress={() => setSize(size.id)}
+              activeOpacity={0.7}
+            >
+              <Text style={[
+                styles.chipName,
+                isSelected && styles.chipNameSelected
+              ]}>
+                {size.name}
+              </Text>
+              <Text style={[
+                styles.chipLabel,
+                isSelected && styles.chipLabelSelected
+              ]}>
+                {size.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 16,
+    paddingVertical: normalizePadding(10),
+    backgroundColor: colors.backgroundPrimary,
   },
-  optionContent: {
+  label: {
+    ...textStyles.label,
+    fontSize: normalizeFontSize(13),
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: normalizePadding(8),
+  },
+  chipsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: normalizePadding(10),
+  },
+  chip: {
+    flex: 1,
+    backgroundColor: colors.backgroundPrimary,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    paddingVertical: normalizePadding(4),
     alignItems: 'center',
   },
-  optionName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    minWidth: 60,
+  chipSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
-  optionDescription: {
-    fontSize: 14,
-    color: '#666',
-    flex: 1,
-    marginLeft: 12,
+  chipName: {
+    fontSize: normalizeFontSize(13),
+    fontWeight: '700',
+    color: colors.textPrimary,
   },
-  optionWeight: {
-    fontSize: 12,
-    color: '#999',
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  infoBox: {
-    backgroundColor: '#f8f9fa',
-    padding: 12,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
-    marginTop: 8,
-  },
-  infoTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  infoText: {
-    fontSize: 13,
-    color: '#666',
-    marginBottom: 2,
+  chipLabel: {
+    fontSize: normalizeFontSize(10),
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
 });
 

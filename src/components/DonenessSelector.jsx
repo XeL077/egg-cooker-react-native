@@ -5,6 +5,9 @@ import imgSemiSoft from '../assets/img/semi-soft.png';
 import imgMediumBoiled from '../assets/img/medium-boiled.png';
 import imgHardBoiled from '../assets/img/hard-boiled.png';
 import imgPoached from '../assets/img/poached.png';
+import { getCookingTimeRange } from '../data/cookingTimes';
+import { useSettings } from '../context/SettingsContext';
+import { normalizePadding, normalizeFontSize, normalizeImageSize } from '../utils/responsive';
 
 /**
  * DonenessSelector - компонент выбора степени готовности яиц
@@ -12,7 +15,10 @@ import imgPoached from '../assets/img/poached.png';
  * @param {Function} onSelect - callback при выборе степени готовности
  */
 const DonenessSelector = ({ selectedDoneness = 'soft', onSelect }) => {
-  const donenessOptions = [
+  const { selectedSize } = useSettings();
+  
+  // Опции степени готовности с динамическим временем
+  const donenessOptions = useMemo(() => [
     {
       id: 'soft',
       name: 'Всмятку',
@@ -20,16 +26,7 @@ const DonenessSelector = ({ selectedDoneness = 'soft', onSelect }) => {
       icon: '🥚',
       image: imgSoftBoiled,
       description: 'Желток жидкий',
-      time: '4-5 мин'
-    },
-    {
-      id: 'semi-soft',
-      name: 'Полувсмятку',
-      english: 'semi soft',
-      icon: '🥚',
-      image: imgSemiSoft,
-      description: 'Желток полужидкий',
-      time: '5-6 мин'
+      time: getCookingTimeRange('soft', selectedSize)
     },
     {
       id: 'medium',
@@ -38,7 +35,7 @@ const DonenessSelector = ({ selectedDoneness = 'soft', onSelect }) => {
       icon: '🥚',
       image: imgMediumBoiled,
       description: 'Желток густой',
-      time: '6-7 мин'
+      time: getCookingTimeRange('medium', selectedSize)
     },
     {
       id: 'hard',
@@ -47,18 +44,9 @@ const DonenessSelector = ({ selectedDoneness = 'soft', onSelect }) => {
       icon: '🥚',
       image: imgHardBoiled,
       description: 'Желток твердый',
-      time: '8-10 мин'
-    },
-    {
-      id: 'poached',
-      name: 'Пашот',
-      english: 'poached',
-      icon: '🍳',
-      image: imgPoached,
-      description: 'Без скорлупы',
-      time: '3-4 мин'
+      time: getCookingTimeRange('hard', selectedSize)
     }
-  ];
+  ], [selectedSize]);
 
   const listRef = useRef(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -66,7 +54,7 @@ const DonenessSelector = ({ selectedDoneness = 'soft', onSelect }) => {
   const selectedIndex = useMemo(() => {
     const idx = donenessOptions.findIndex(o => o.id === selectedDoneness);
     return Math.max(0, idx);
-  }, [selectedDoneness]);
+  }, [selectedDoneness, donenessOptions]);
 
   useEffect(() => {
     if (!listRef.current || containerWidth === 0) return;
@@ -121,10 +109,10 @@ const DonenessSelector = ({ selectedDoneness = 'soft', onSelect }) => {
           }} 
           style={[
             styles.option,
-            isSelected ? styles.optionSelected : styles.optionUnselected
+            isSelected ? styles.optionSelected : null
           ]}
         >
-          <Image source={{ uri: item.image }} style={styles.optionImage} resizeMode="contain" />
+          <Image source={item.image} style={styles.optionImage} resizeMode="contain" />
           <Text style={styles.optionName}>
             {item.name}
           </Text>
@@ -187,10 +175,7 @@ const DonenessSelector = ({ selectedDoneness = 'soft', onSelect }) => {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: 240,
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    margin: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -207,27 +192,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   slideInner: {
-    height: 200,
-    padding: 20,
+    height: normalizePadding(200),
     justifyContent: 'center',
     alignItems: 'center',
   },
   option: {
     width: '100%',
     height: '100%',
-    padding: 12,
-    borderRadius: 12,
+    padding: normalizePadding(12),
     alignItems: 'center',
     borderWidth: 2,
     justifyContent: 'center',
+    
+    backgroundColor: 'rgb(244 243 236)',
   },
   optionSelected: {
-    backgroundColor: '#E8F5E8',
     borderColor: '#4CAF50',
-  },
-  optionUnselected: {
-    backgroundColor: '#f8f8f8',
-    borderColor: '#e0e0e0',
   },
   optionIcon: {
     fontSize: 28,
@@ -235,40 +215,38 @@ const styles = StyleSheet.create({
   },
   optionImage: {
     width: '100%',
-    height: 60,
-    marginBottom: 6,
+    height: normalizeImageSize(60, 60).height,
+    marginBottom: normalizePadding(6),
   },
   optionName: {
-    fontSize: 14,
+    fontSize: normalizeFontSize(14),
     fontWeight: '700',
-    marginBottom: 3,
+    marginBottom: normalizePadding(3),
     textAlign: 'center',
   },
   optionDescription: {
-    fontSize: 10,
-    marginBottom: 4,
+    fontSize: normalizeFontSize(10),
+    marginBottom: normalizePadding(4),
     textAlign: 'center',
   },
   optionTime: {
-    fontSize: 12,
+    fontSize: normalizeFontSize(12),
     fontWeight: '600',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 6,
+    paddingHorizontal: normalizePadding(6),
+    paddingVertical: normalizePadding(3),
   },
-
 
   dotsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 8,
-    gap: 6,
+    paddingVertical: normalizePadding(8),
+    gap: normalizePadding(6),
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginHorizontal: 4,
+    width: normalizePadding(10),
+    height: normalizePadding(10),
+    borderRadius: normalizePadding(5),
+    marginHorizontal: normalizePadding(4),
   },
   dotActive: {
     backgroundColor: '#4CAF50',
