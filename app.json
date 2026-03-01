@@ -42,10 +42,17 @@
     "runtimeVersion": {
       "policy": "appVersion"
     },
+    "scheme": "eggcooker",
+    "experiments": {
+      "typedRoutes": true
+    },
     "extra": {
       "eas": {
         "projectId": "d456eb92-8ca4-47e8-b228-8fb9d034c6a4"
       }
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }

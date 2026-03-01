@@ -41,9 +41,12 @@ export const DEFAULT_COOKING_TIMES = {
 };
 
 /**
- * Получить время варки яйца в секундах
+ * Единственная функция перевода двух настроек в время таймера.
+ * Везде в приложении используем только её: getCookingTime(selectedDoneness, selectedSize).
+ * Покрыта тестами: src/data/cookingTimes.test.js
+ *
  * @param {string} doneness - Степень готовности: 'soft', 'medium', 'hard'
- * @param {string} size - Размер яйца: 'C0', 'C1', 'C2', или null
+ * @param {string|null} size - Размер яйца: 'C0', 'C1', 'C2', или null (без размера)
  * @returns {number} Время варки в секундах
  */
 export const getCookingTime = (doneness = 'soft', size = null) => {

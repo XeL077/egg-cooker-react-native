@@ -8,7 +8,7 @@ import { Animated } from 'react-native';
  * @param {number} maxHeight - Максимальная высота контента (по умолчанию 1000)
  * @param {ReactNode} children - Дочерние элементы
  */
-const AnimatedCollapse = ({ visible, duration = 300, maxHeight = 1000, children }) => {
+const AnimatedCollapse = ({ visible, duration = 300, maxHeight = 1000, style, children }) => {
   const animation = useRef(new Animated.Value(visible ? 1 : 0)).current;
 
   useEffect(() => {
@@ -26,11 +26,14 @@ const AnimatedCollapse = ({ visible, duration = 300, maxHeight = 1000, children 
 
   return (
     <Animated.View
-      style={{
-        maxHeight: height,
-        opacity: animation,
-        overflow: 'hidden',
-      }}
+      style={[
+        {
+          maxHeight: height,
+          opacity: animation,
+          overflow: 'hidden',
+        },
+        style,
+      ]}
     >
       {children}
     </Animated.View>

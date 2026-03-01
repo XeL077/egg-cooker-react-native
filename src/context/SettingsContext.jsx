@@ -1,15 +1,8 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const ACTIVE_TAB_TYPE = {
-  TIMER: 'timer',
-  EGG: 'egg',
-  WEATHER: 'weather',
-}
 
 // Ключи для AsyncStorage
 const STORAGE_KEYS = {
-  ACTIVE_TAB: 'active_tab',
   SIZE: 'egg_timer_size',
   TEMPERATURE: 'egg_timer_temperature',
   DONENESS: 'egg_timer_doneness',
@@ -20,7 +13,6 @@ const STORAGE_KEYS = {
 
 // Начальное состояние настроек
 const initialState = {
-  activeTab: ACTIVE_TAB_TYPE.EGG,
   selectedSize: null,
   isHotWater: false,
   selectedDoneness: 'soft',
@@ -30,19 +22,17 @@ const initialState = {
   },
   language: 'ru',
   isLoading: true,
-  // Состояние таймера
   timerState: {
-    state: 'idle', // idle, running, paused, stopped
-    startTime: null, // время начала отсчета (timestamp)
-    totalTime: 300, // общее время в секундах
-    timeLeft: 300, // оставшееся время в секундах
-    pausedAt: null, // время паузы (timestamp)
+    state: 'idle',
+    startTime: null,
+    totalTime: 300,
+    timeLeft: 300,
+    pausedAt: null,
   },
 };
 
 // Типы действий
 const ActionTypes = {
-  SET_ACTIVE_TAB: 'SET_ACTIVE_TAB',
   SET_LOADING: 'SET_LOADING',
   SET_SIZE: 'SET_SIZE',
   SET_TEMPERATURE: 'SET_TEMPERATURE',
@@ -61,9 +51,6 @@ const ActionTypes = {
 // Редьюсер для управления состоянием
 const settingsReducer = (state, action) => {
   switch (action.type) {
-    case ActionTypes.SET_ACTIVE_TAB:
-      return { ...state, activeTab: action.payload };
-    
     case ActionTypes.SET_LOADING:
       return { ...state, isLoading: action.payload };
     
@@ -162,18 +149,28 @@ const settingsReducer = (state, action) => {
 const SettingsContext = createContext();
 
 // Провайдер контекста
+const SAVE_DEBOUNCE_MS = 400;
+
 export const SettingsProvider = ({ children }) => {
   const [state, dispatch] = useReducer(settingsReducer, initialState);
+  const saveTimeoutRef = useRef(null);
 
   // Загрузка настроек при инициализации
   useEffect(() => {
     loadSettings();
   }, []);
 
-  // Сохранение настроек при изменении
+  // Сохранение настроек при изменении (с дебаунсом, чтобы не писать в AsyncStorage при каждом тике таймера)
   useEffect(() => {
     if (!state.isLoading) {
-      saveSettings();
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        saveSettings();
+        saveTimeoutRef.current = null;
+      }, SAVE_DEBOUNCE_MS);
+      return () => {
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      };
     }
   }, [state]);
 
@@ -181,7 +178,6 @@ export const SettingsProvider = ({ children }) => {
   const loadSettings = async () => {
     try {
       const [
-        activeTab,
         size,
         temperature,
         doneness,
@@ -189,7 +185,6 @@ export const SettingsProvider = ({ children }) => {
         language,
         timerState
       ] = await Promise.all([
-        AsyncStorage.getItem(STORAGE_KEYS.ACTIVE_TAB),
         AsyncStorage.getItem(STORAGE_KEYS.SIZE),
         AsyncStorage.getItem(STORAGE_KEYS.TEMPERATURE),
         AsyncStorage.getItem(STORAGE_KEYS.DONENESS),
@@ -199,7 +194,6 @@ export const SettingsProvider = ({ children }) => {
       ]);
 
       // Применяем загруженные настройки
-      if (activeTab) dispatch({ type: ActionTypes.SET_ACTIVE_TAB, payload: activeTab });
       if (size) dispatch({ type: ActionTypes.SET_SIZE, payload: size });
       if (temperature !== null) {
         dispatch({ type: ActionTypes.SET_TEMPERATURE, payload: temperature === 'true' });
@@ -237,7 +231,6 @@ export const SettingsProvider = ({ children }) => {
   const saveSettings = async () => {
     try {
       await Promise.all([
-        AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, state.activeTab),
         AsyncStorage.setItem(STORAGE_KEYS.SIZE, state.selectedSize || ''),
         AsyncStorage.setItem(STORAGE_KEYS.TEMPERATURE, state.isHotWater.toString()),
         AsyncStorage.setItem(STORAGE_KEYS.DONENESS, state.selectedDoneness),
@@ -252,9 +245,6 @@ export const SettingsProvider = ({ children }) => {
 
   // FC для изменения настроек
   const actions = {
-    setActiveTab: (activeTab) => {
-      dispatch({ type: ActionTypes.SET_ACTIVE_TAB, payload: activeTab });
-    },
     setSize: (size) => {
       dispatch({ type: ActionTypes.SET_SIZE, payload: size });
     },
@@ -323,5 +313,4 @@ export const useSettings = () => {
   return context;
 };
 
-export { ACTIVE_TAB_TYPE };
 export default SettingsContext;

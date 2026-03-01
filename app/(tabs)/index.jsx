@@ -1,20 +1,16 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SettingsProvider, useSettings } from './context/SettingsContext';
-import Layout from './Layout';
-import SplashScreen from './components/SplashScreen';
-import DonenessSelector from './components/DonenessSelector';
-import CircularTimer from './components/CircularTimer';
-import EggSizeSelector from './components/EggSizeSelector';
-import AnimatedCollapse from './components/AnimatedCollapse';
-import { colors, textStyles } from './theme';
-import { getCookingTime } from './data/cookingTimes';
-import { normalizePadding, normalizeFontSize } from './utils/responsive';
+import { useSettings } from '../../src/context/SettingsContext';
+import Layout from '../../src/Layout';
+import DonenessSelector from '../../src/components/DonenessSelector';
+import CircularTimer from '../../src/components/CircularTimer';
+import EggSizeSelector from '../../src/components/EggSizeSelector';
+import AnimatedCollapse from '../../src/components/AnimatedCollapse';
+import { colors, textStyles } from '../../src/theme';
+import { getCookingTime } from '../../src/data/cookingTimes';
+import { normalizePadding, normalizeFontSize } from '../../src/utils/responsive';
 
-/**
- * Экран таймера яиц (используется как Vite-точка входа для npm run dev)
- */
-const EggTimerView = () => {
+export default function EggTimerScreen() {
   const {
     timerState,
     startTimer,
@@ -26,17 +22,16 @@ const EggTimerView = () => {
     selectedSize,
   } = useSettings();
 
-  const cookingTime = useMemo(
-    () => getCookingTime(selectedDoneness, selectedSize),
-    [selectedDoneness, selectedSize]
-  );
+  const cookingTime = useMemo(() => {
+    return getCookingTime(selectedDoneness, selectedSize);
+  }, [selectedDoneness, selectedSize]);
 
   // При смене типа варки или размера в режиме idle обновляем время в контексте
   useEffect(() => {
     if (timerState.state === 'idle') {
       resetTimer(cookingTime);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- синхронизируем только по cookingTime/state
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- синхронизируем только по cookingTime/state
   }, [cookingTime, timerState.state]);
 
   const handleTimeEnd = useCallback(() => {
@@ -45,18 +40,23 @@ const EggTimerView = () => {
 
   const handleStartStop = useCallback(() => {
     if (timerState.state === 'idle') {
+      // Всегда берём актуальное время по текущим selectedDoneness/selectedSize
       const time = getCookingTime(selectedDoneness, selectedSize);
       startTimer(time);
-    } else if (timerState.state === 'paused') resumeTimer();
-    else if (timerState.state === 'running') pauseTimer();
-    else if (timerState.state === 'stopped') {
+    } else if (timerState.state === 'paused') {
+      resumeTimer();
+    } else if (timerState.state === 'running') {
+      pauseTimer();
+    } else if (timerState.state === 'stopped') {
       const time = getCookingTime(selectedDoneness, selectedSize);
       resetTimer(time);
       startTimer(time);
     }
   }, [timerState.state, selectedDoneness, selectedSize, startTimer, resumeTimer, pauseTimer, resetTimer]);
 
-  const handleReset = useCallback(() => resetTimer(cookingTime), [cookingTime, resetTimer]);
+  const handleReset = useCallback(() => {
+    resetTimer(cookingTime);
+  }, [cookingTime, resetTimer]);
 
   const startStopButtonText =
     timerState.state === 'running'
@@ -64,56 +64,52 @@ const EggTimerView = () => {
       : timerState.state === 'stopped'
         ? 'Заново'
         : 'Старт';
+
   const startStopButtonStyle =
     timerState.state === 'running' ? styles.pauseButton : styles.startButton;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.eggViewContainer}>
-        <AnimatedCollapse visible={timerState.state === 'idle'}>
-          <EggSizeSelector />
-        </AnimatedCollapse>
-        <AnimatedCollapse visible={timerState.state === 'idle'}>
-          <DonenessSelector selectedDoneness={selectedDoneness} onSelect={setDoneness} />
-        </AnimatedCollapse>
-        <AnimatedCollapse visible={timerState.state !== 'idle'} style={styles.timerCollapse}>
-          <View style={styles.timerSection}>
-            <CircularTimer initTime={cookingTime} onTimeEnd={handleTimeEnd} />
-          </View>
-        </AnimatedCollapse>
-      </View>
-      <View style={styles.timerControls}>
-        <TouchableOpacity style={startStopButtonStyle} onPress={handleStartStop}>
-          <Text style={styles.buttonText}>{startStopButtonText}</Text>
-        </TouchableOpacity>
-        {timerState.state === 'paused' && (
-          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-            <Text style={styles.resetButtonText}>Сброс</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
-  );
-};
-
-const AppContent = () => {
-  const { isLoading } = useSettings();
-  if (isLoading) return <SplashScreen isLoading />;
-  return (
     <Layout>
-      <EggTimerView />
+      <View style={styles.container}>
+        <View style={styles.eggViewContainer}>
+          <AnimatedCollapse visible={timerState.state === 'idle'}>
+            <EggSizeSelector />
+          </AnimatedCollapse>
+          <AnimatedCollapse visible={timerState.state === 'idle'}>
+            <DonenessSelector
+              selectedDoneness={selectedDoneness}
+              onSelect={setDoneness}
+            />
+          </AnimatedCollapse>
+          <AnimatedCollapse visible={timerState.state !== 'idle'} style={styles.timerCollapse}>
+            <View style={styles.timerSection}>
+              <CircularTimer initTime={cookingTime} onTimeEnd={handleTimeEnd} />
+            </View>
+          </AnimatedCollapse>
+        </View>
+
+        <View style={styles.timerControls}>
+          <TouchableOpacity
+            style={startStopButtonStyle}
+            onPress={handleStartStop}
+          >
+            <Text style={styles.buttonText}>{startStopButtonText}</Text>
+          </TouchableOpacity>
+          {timerState.state === 'paused' && (
+            <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+              <Text style={styles.resetButtonText}>Сброс</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
     </Layout>
   );
-};
-
-const App = () => (
-  <SettingsProvider>
-    <AppContent />
-  </SettingsProvider>
-);
+}
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: {
+    flex: 1,
+  },
   eggViewContainer: {
     flex: 1,
     backgroundColor: colors.backgroundSecondary,
@@ -182,5 +178,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
-export default App;

@@ -1,10 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
 import imgSoftBoiled from '../assets/img/soft-boiled.png';
-import imgSemiSoft from '../assets/img/semi-soft.png';
 import imgMediumBoiled from '../assets/img/medium-boiled.png';
 import imgHardBoiled from '../assets/img/hard-boiled.png';
-import imgPoached from '../assets/img/poached.png';
 import { getCookingTimeRange } from '../data/cookingTimes';
 import { useSettings } from '../context/SettingsContext';
 import { normalizePadding, normalizeFontSize, normalizeImageSize } from '../utils/responsive';
@@ -57,13 +55,12 @@ const DonenessSelector = ({ selectedDoneness = 'soft', onSelect }) => {
   }, [selectedDoneness, donenessOptions]);
 
   useEffect(() => {
-    if (!listRef.current || containerWidth === 0) return;
-    if (selectedIndex >= 0) {
-      try {
-        listRef.current.scrollToIndex({ index: selectedIndex, animated: true });
-        setCurrentIndex(selectedIndex);
-      } catch {}
-    }
+    if (!listRef.current || containerWidth === 0 || selectedIndex < 0) return;
+    setCurrentIndex(selectedIndex);
+    const offset = containerWidth * selectedIndex;
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToOffset({ offset, animated: true });
+    });
   }, [selectedIndex, containerWidth]);
 
   const handleMomentumEnd = (e) => {
@@ -142,28 +139,30 @@ const DonenessSelector = ({ selectedDoneness = 'soft', onSelect }) => {
         onScroll={handleScroll}
         snapToAlignment="start"
         scrollEventThrottle={16}
-        getItemLayout={(data, index) => ({ length: containerWidth, offset: containerWidth * index, index })}
-        initialScrollIndex={Math.max(0, selectedIndex)}
+        getItemLayout={containerWidth > 0 ? (data, index) => ({ length: containerWidth, offset: containerWidth * index, index }) : undefined}
+        initialScrollIndex={containerWidth > 0 ? Math.max(0, selectedIndex) : 0}
         extraData={selectedDoneness}
         decelerationRate="fast"
         bounces={true}
       />
       <View style={styles.dotsRow}>
-        {donenessOptions.map((_, index) => (
+        {donenessOptions.map((option, index) => (
           <TouchableOpacity
-            key={index}
+            key={option.id}
             onPress={() => {
-              if (listRef.current) {
-                listRef.current.scrollToIndex({ 
-                  index: index, 
-                  animated: true 
+              const targetIndex = index;
+              onSelect(option.id);
+              setCurrentIndex(targetIndex);
+              if (containerWidth > 0) {
+                const offset = containerWidth * targetIndex;
+                requestAnimationFrame(() => {
+                  listRef.current?.scrollToOffset({ offset, animated: true });
                 });
-                setCurrentIndex(index);
               }
             }}
             style={[
               styles.dot,
-              index === currentIndex ? styles.dotActive : styles.dotInactive
+              index === selectedIndex ? styles.dotActive : styles.dotInactive
             ]}
           />
         ))}
